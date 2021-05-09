@@ -1,3 +1,4 @@
+import React from "react";
 import './Results.scss';
 import {Card, CardActionArea, CardContent, CardMedia, Grid, Typography} from "@material-ui/core";
 import {UserInterface} from "../../types/models.d";

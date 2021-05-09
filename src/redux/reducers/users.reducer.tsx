@@ -3,10 +3,10 @@ import {
   UsersActionTypes,
   FETCHING_USERS,
   FETCH_USERS_SUCCESS,
-  FETCH_USERS_FAILURE
+  FETCH_USERS_FAILURE,
+  PER_PAGE
 } from "../types";
 
-const PER_PAGE = 9;
 const initialState: UsersState = {
   users: [],
   isFetching: false,

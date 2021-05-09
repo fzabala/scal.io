@@ -5,7 +5,7 @@ import {useDispatch, useSelector} from "react-redux"
 import {Results} from "./components/Results/Results";
 import {RootState} from "./redux/reducers";
 import {UsersActionTypes} from "./redux/types";
-import {fetchUsers} from "./redux/actions/users.actions";
+import {fetchUsers} from "./redux/actions";
 import {Paginator} from "./components/Paginator/Paginator";
 import {Alert} from "@material-ui/lab";
 
