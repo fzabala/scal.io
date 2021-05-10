@@ -3,13 +3,19 @@ import {Provider} from 'react-redux';
 import createMockStore, {MockStoreCreator, MockStoreEnhanced} from 'redux-mock-store';
 import {mount} from './setup/test-setup';
 import App from '../src/App';
-import {FETCH_USERS_SUCCESS, FETCHING_USERS, PER_PAGE, UsersActionTypes, UsersState} from "../src/redux/types";
+import {
+  FETCH_USERS_FAILURE,
+  FETCH_USERS_SUCCESS,
+  FETCHING_USERS,
+  PER_PAGE,
+  UsersActionTypes,
+  UsersState
+} from "../src/redux/types";
 import axios from 'axios';
 
 jest.mock('axios');
 const axiosMock = axios as jest.Mocked<typeof axios>;
 
-const mockDispatchfn = jest.fn();
 import thunk, {ThunkDispatch} from 'redux-thunk';
 import {RootState} from './../src/redux/reducers'
 import {AnyAction, Middleware, CombinedState} from 'redux';
@@ -48,7 +54,7 @@ describe('App', function () {
     mockStore.clearActions();
     wrapper = mount(
       <Provider store={mockStore}>
-        <App {...props} dispatch={mockDispatchfn}/>
+        <App {...props}/>
       </Provider>,
     );
   });
@@ -60,54 +66,68 @@ describe('App', function () {
     expect(wrapper.find(Paginator).length).toBe(0);
   });
 
-  test('dispatch fetchUsers', async() => {
-    const data = {
-      "total_count": 1,
-      "incomplete_results": false,
-      "items": [
-        {
-          "login": "WolverineFan",
-          "id": 676544,
-          "node_id": "MDQ6VXNlcjY3NjU0NA==",
-          "avatar_url": "https://avatars.githubusercontent.com/u/676544?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/WolverineFan",
-          "html_url": "https://github.com/WolverineFan",
-          "followers_url": "https://api.github.com/users/WolverineFan/followers",
-          "following_url": "https://api.github.com/users/WolverineFan/following{/other_user}",
-          "gists_url": "https://api.github.com/users/WolverineFan/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/WolverineFan/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/WolverineFan/subscriptions",
-          "organizations_url": "https://api.github.com/users/WolverineFan/orgs",
-          "repos_url": "https://api.github.com/users/WolverineFan/repos",
-          "events_url": "https://api.github.com/users/WolverineFan/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/WolverineFan/received_events",
-          "type": "User",
-          "site_admin": false,
-          "score": 1.0
-        }
-      ]
-    };
-    axiosMock.get.mockResolvedValue(() => Promise.resolve({data}));
-    axiosMock.get.mockRejectedValue(() => Promise.reject('We have a problem'));
+  describe('dispatch fetchUsers', () => {
+    it('and get success', () => {
+      const data = {
+        "total_count": 1,
+        "incomplete_results": false,
+        "items": [
+          {
+            "login": "WolverineFan",
+            "id": 676544,
+            "node_id": "MDQ6VXNlcjY3NjU0NA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/676544?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/WolverineFan",
+            "html_url": "https://github.com/WolverineFan",
+            "followers_url": "https://api.github.com/users/WolverineFan/followers",
+            "following_url": "https://api.github.com/users/WolverineFan/following{/other_user}",
+            "gists_url": "https://api.github.com/users/WolverineFan/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/WolverineFan/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/WolverineFan/subscriptions",
+            "organizations_url": "https://api.github.com/users/WolverineFan/orgs",
+            "repos_url": "https://api.github.com/users/WolverineFan/repos",
+            "events_url": "https://api.github.com/users/WolverineFan/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/WolverineFan/received_events",
+            "type": "User",
+            "site_admin": false,
+            "score": 1.0
+          }
+        ]
+      };
 
-    const expectedActions: UsersActionTypes[] = [{
-      type: FETCHING_USERS,
-      payload: undefined,
-    }, {
-      type: FETCH_USERS_SUCCESS,
-      payload: {
-        users: data.items as UserInterface[],
-        login: 'wolverine',
-        total: data.total_count,
-      },
-    }];
-    axiosMock.get.mockResolvedValue({data});
+      const expectedActions: UsersActionTypes[] = [{
+        type: FETCHING_USERS,
+        payload: undefined,
+      }, {
+        type: FETCH_USERS_SUCCESS,
+        payload: {
+          users: data.items as UserInterface[],
+          login: 'wolverine',
+          total: data.total_count,
+        },
+      }];
+      axiosMock.get.mockResolvedValue({data});
 
-    mockStore.dispatch(fetchUsers('wolverine', 1))
-      .then(() => {
-        console.log(mockStore.getActions());
-        expect(mockStore.getActions()).toEqual(expectedActions);
-      })
+      mockStore.dispatch(fetchUsers('wolverine', 1))
+        .then(() => {
+          expect(mockStore.getActions()).toEqual(expectedActions);
+        })
+    });
+    it('and get failure', () => {
+      const expectedActions: UsersActionTypes[] = [{
+        type: FETCHING_USERS,
+        payload: undefined,
+      }, {
+        type: FETCH_USERS_FAILURE,
+        payload: 'Houston, we have a problem',
+      }];
+      axiosMock.get.mockRejectedValue('Houston, we have a problem');
+
+      mockStore.dispatch(fetchUsers('wolverine', 1))
+        .then(() => {
+          expect(mockStore.getActions()).toEqual(expectedActions);
+        })
+    });
   });
 });
